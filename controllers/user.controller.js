@@ -26,11 +26,14 @@ const userDelete = async (req, res = response) => {
 
   const { id } = req.params;
 
+  const uid = req.uid;
+
   //* se elimina fisicamente *//
   // const user = await User.findByIdAndDelete(id);
 
   //* cambiar estado de usuario *//
   const user = await User.findByIdAndUpdate(id, {state: false});
+  // const userAuthenticated = req.dataUSer;
 
   res.json({
     estadoPeticion: true,
