@@ -33,14 +33,14 @@
     console.log( window.location.hostname.includes('localhost') );
     var url = (window.location.hostname.includes('localhost'))
       ? 'http://localhost:5000/api/auth/google'
-      : 'https://restserver-cristian.herokuapp.com'
+      : 'https://restserver-cristian.herokuapp.com/api/auth/google'
 
     function handleCredentialResponse(response) {
 
       const body = { id_token: response.credential };
 
       // TODO: Petición real
-      fetch(url, {
+      fetch('http://localhost:5000/api/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
