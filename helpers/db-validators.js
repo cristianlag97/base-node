@@ -1,5 +1,5 @@
 const Role = require('../models/role');
-const User = require('../models/user');
+const {User, Category, Product} = require('../models');
 
 const isRoleValidate = async (role = '') => {
   const existRole = await Role.findOne({role});
@@ -13,11 +13,43 @@ const emailExist = async (email = '') => {
 
 const existUserById = async (id) => {
   const existUser = await User.findById(id);
-  if(!existUser) throw new Error(`El id ${id} no existe`)
+  if(!existUser) throw new Error(`El id ${id} no existe`);
+}
+
+const existsCategoryById = async (id) => {
+  const exist = await Category.findById(id);
+  if (!exist) throw new Error(`El id ${id} no existe`);
+}
+
+const diferentCategory = async(name) => {
+  const repeat = await Category.findOne({name: name.toUpperCase()});
+  if(repeat) throw new Error(`El nombre ${name} ya existe`);
+}
+
+const existsProductById = async (id) => {
+  const exist = await Product.findById(id);
+  if (!exist) throw new Error(`El id ${id} no existe`);
+}
+
+const diferentProduct = async(name) => {
+  const repeat = await Product.findOne({name: name.toUpperCase()});
+  if(repeat) throw new Error(`El nombre ${name} ya existe`);
+}
+
+const findCategory = async (category) => {
+  const axistCategory = await Category.findOne({name: category.toUpperCase()})
+  if(!axistCategory) throw new Error(`La Categoría ${category} no existe`);
+
+  req.category = axistCategory;
 }
 
 module.exports = {
-  isRoleValidate,
+  diferentCategory,
+  diferentProduct,
   emailExist,
-  existUserById
+  existsCategoryById,
+  existsProductById,
+  existUserById,
+  findCategory,
+  isRoleValidate,
 }

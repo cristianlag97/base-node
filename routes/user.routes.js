@@ -16,8 +16,8 @@ router.delete('/:id',[
   // isAdminRole,
   addRole('ADMIN_ROLE', 'SALES_ROLE'),
   check('id', 'No es un ID válido').isMongoId(),
-  check('id').custom(existUserById),
-  validateInput
+  check('id').custom(existUserById),//* prepara el error en la request *//
+  validateInput //* valida todo lo que venga del req (recibe los errores en el caso de que hayan errores en los checks)*//
 ], userDelete);
 
 router.put('/:id',[

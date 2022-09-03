@@ -8,7 +8,7 @@ const userGet = async (req = request, res = response) => {
 
 
   const [total, users] = await Promise.all([
-    User.countDocuments({state: true}),
+    User.countDocuments({state: true}),//* se usa para contar la cantidad de documentos o registros que coinciden con el filtro en una colección de base de datos. *//
     User.find({ state: true })
       .skip(Number(since))
       .limit(Number(limit))
@@ -33,7 +33,7 @@ const userDelete = async (req, res = response) => {
 
   //* cambiar estado de usuario *//
   const user = await User.findByIdAndUpdate(id, {state: false});
-  // const userAuthenticated = req.dataUSer;
+  // const userAuthenticated = req.user;
 
   res.json({
     estadoPeticion: true,

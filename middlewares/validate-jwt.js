@@ -14,7 +14,7 @@ const validateJWT = async (req, res = response, next) => {
 
     const {uid} = jwt.verify(token, process.env.SECRET_KEY);
 
-    // req.dataUSer = await User.findById(uid)
+    // req.user = await User.findById(uid)
     const user = await User.findById(uid);
     if(!user) return res.status(401).json({
       msg: 'Token no valido - usuario no existente'
@@ -25,7 +25,7 @@ const validateJWT = async (req, res = response, next) => {
       msg: 'Token no valido - usuario con estado false'
     })
 
-    req.dataUSer = user;
+    req.user = user;
     req.uid = uid;//* para poder procesar el uid en los controladores *//
 
     next();
