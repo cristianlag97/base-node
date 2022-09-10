@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors');
+const fileUpload = require('express-fileupload');
 const { dbConnection } = require('../database/config.db');
 
 class Server {
@@ -10,10 +11,11 @@ class Server {
 
     this.path = {
       auth: '/api/auth',
-      users: '/api/users',
       category: '/api/category',
       product: '/api/product',
       search: '/api/search',
+      uploads: '/api/uploads',
+      users: '/api/users',
     }
 
     // this.usersPath = '/api/users';
@@ -35,10 +37,11 @@ class Server {
 
   routes() {
     this.app.use(this.path.auth, require('../routes/auth.routes'));
-    this.app.use(this.path.users, require('../routes/user.routes'));
     this.app.use(this.path.category, require('../routes/category.routes'));
     this.app.use(this.path.product, require('../routes/product.routes'));
     this.app.use(this.path.search, require('../routes/search.routes'));
+    this.app.use(this.path.uploads, require('../routes/uploads.routes'));
+    this.app.use(this.path.users, require('../routes/user.routes'));
   }
 
   middlewares() {
@@ -50,6 +53,13 @@ class Server {
 
     //* Directorio publico *//
     this.app.use(express.static('public'));
+
+    // Note that this option available for versions 1.0.0 and newer.
+    this.app.use(fileUpload({
+      useTempFiles : true,
+      tempFileDir : '/tmp/',
+      createParentPath: true
+    }));
   }
 
   listen() {
