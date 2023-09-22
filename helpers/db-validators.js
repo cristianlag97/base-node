@@ -1,75 +1,28 @@
-const Role = require('../models/role');
-const {User, Category, Product} = require('../models');
-const { collection } = require('../models/role');
+const { User, Task } = require("../database/dbConnection");
 
-//* valida si el rol está registrado en la db *//
-const isRoleValidate = async (role = '') => {
-  const existRole = await Role.findOne({role});
-  if(!existRole) throw new Error(`El rol ${role} no está registrado en la base de datos`)
-}
 
 //* valida si el correo está registrado o no *//
 const emailExist = async (email = '') => {
-  const existEmail = await User.findOne({email});
+  const existEmail = await User.findOne({ where: {email} });
+  console.log({email, existEmail});
   if(existEmail) throw new Error(`El correo ${email} ya se encuentra registrado`)
 }
 
 //* valida si el usuario existe *//
 const existUserById = async (id) => {
-  const existUser = await User.findById(id);
+  const existUser = await User.findOne({where: {id}});
   if(!existUser) throw new Error(`El id ${id} no existe`);
 }
 
-//* valida si la categoria existe *//
-const existsCategoryById = async (id) => {
-  const exist = await Category.findById(id);
-  if (!exist) throw new Error(`El id ${id} no existe`);
+//* valida si el task existe *//
+const existTaskById = async (id) => {
+  const existTask = await Task.findOne({where: {id}});
+  if(!existTask) throw new Error(`El id ${id} no existe`);
 }
 
-//* valida si se repite o no una categoria *//
-const diferentCategory = async(name) => {
-  const repeat = await Category.findOne({name: name.toUpperCase()});
-  if(repeat) throw new Error(`El nombre ${name} ya existe`);
-}
-
-//* valida si existe o no un producto *//
-const existsProductById = async (id) => {
-  const exist = await Product.findById(id);
-  if (!exist) throw new Error(`El id ${id} no existe`);
-}
-
-//* valida si se repite o no un producto *//
-const diferentProduct = async(name) => {
-  const repeat = await Product.findOne({name: name.toUpperCase()});
-  if(repeat) throw new Error(`El nombre ${name} ya existe`);
-}
-
-//* valida si la categoria existe *//
-const findCategory = async (category) => {
-  const axistCategory = await Category.findOne({name: category.toUpperCase()})
-  if(!axistCategory) throw new Error(`La Categoría ${category} no existe`);
-
-  req.category = axistCategory;
-}
-
-//* valida las colecciones permitidas *//
-const allowedCollections = (collection = '', collections = []) => {
-
-  const included = collections.includes(collection);
-  if(!included) throw new Error(`La colección ${collection} no es permitida - ${collections}`)
-
-  return true;
-
-}
 
 module.exports = {
-  allowedCollections,
-  diferentCategory,
-  diferentProduct,
   emailExist,
-  existsCategoryById,
-  existsProductById,
   existUserById,
-  findCategory,
-  isRoleValidate,
+  existTaskById
 }

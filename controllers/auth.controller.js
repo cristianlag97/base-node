@@ -1,8 +1,7 @@
 const { response } = require('express');
 const bcryptjs = require('bcryptjs');
-const User = require('../models/user');
 const { generateJWT } = require('../helpers/generate-jwt');
-const { googleVerify } = require('../helpers/google-verify');
+const { User } = require('../database/dbConnection');
 
 
 const login = async (req, res = response) => {
@@ -12,7 +11,7 @@ const login = async (req, res = response) => {
   try {
 
     //* verificar si el email existe *//
-    const user = await User.findOne({email});
+    let user = await User.findOne({where: { email: email }});
     if(!user) return res.status(400).json({
       msg: 'Usuario / Contraseña no son correctos - correo'
     });
@@ -21,7 +20,7 @@ const login = async (req, res = response) => {
     if(!user.state) return res.status(400).json({
       msg: 'Usuario / Contraseña no son correctos - estado: false'
     });
-
+    console.log('user: ', {user});
     //* verificar la contraseña *//
     const validatePassword = bcryptjs.compareSync(password, user.password)
     if(!validatePassword)return res.status(400).json({
@@ -29,16 +28,19 @@ const login = async (req, res = response) => {
     });
 
     //* generar JWT *//
+    console.log('user con id: ', user.id);
     const token = await generateJWT(user.id);
 
     res.json({
-      user,
-      token
-    })
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      token,
+    });
 
   } catch (error) {
     return res.status(500).json({
-      msg: 'Hable con el administrador'
+      msg: `Hable con el administrador ${error.message}`
     })
   }
 
@@ -95,7 +97,53 @@ const googleSignIn = async (req, res = response) => {
 
 }
 
+const register = async (req, res = response) => {
+  const { name, email } = req.body;
+  try {
+
+    // const user = await User.create({ name, email, pass });
+    const user = new User({
+      name,
+      email,
+      password: req.body.password,
+    });
+
+
+    //* guardar en base de datos *//
+    const newUser = await user.save();
+    const {password, ...user_data } = newUser.toJSON();
+
+    const token = await generateJWT(user.id);
+
+    res.status(200).json({
+      user: user_data,
+      token
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error: comunicate con el administrador',
+    })
+  }
+}
+
+const refreshToken = async (req, res = response) => {
+  const uid = req.uid;
+  try {
+    const token = await generateJWT(uid);
+    res.status(200).json({
+      token
+    })
+  } catch (error) {
+    res.json({msg: 'comunicate con el admin'});
+  }
+}
+
+
 module.exports = {
   login,
-  googleSignIn
+  googleSignIn,
+  register,
+  refreshToken
 }

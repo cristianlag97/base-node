@@ -1,23 +1,8 @@
-const mongoose = require('mongoose');
+const { Sequelize } = require('sequelize');
 
-const dbConnection = async () => {
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.USER_NAME, process.env.DB_PASSWORD, {
+  host: process.env.HOST,
+  dialect: 'postgres'
+});
 
-  try {
-
-    // await mongoose.connect(process.env.DB_CNN)
-    await mongoose.connect(process.env.DB_CNN, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-    console.log( 'Base de datos Online' );
-
-  } catch (error) {
-    console.log( error );
-    throw new Error('Error a la hora de iniciar la base de datos')
-  }
-
-}
-
-module.exports = {
-  dbConnection
-}
+module.exports = sequelize

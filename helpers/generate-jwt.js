@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 
 const generateJWT = (uid = '') => {
-
+  console.log({uid});
   return new Promise( (resolve, reject) => {
 
     const payload = {uid};
@@ -12,7 +12,7 @@ const generateJWT = (uid = '') => {
     }, (err, token) => {
       if(err) {
         console.log( err );
-        reject('No se pudo generar el toekn')
+        reject('No se pudo generar el token')
       } else {
         resolve(token);
       }

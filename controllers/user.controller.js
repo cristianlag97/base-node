@@ -1,25 +1,34 @@
 const { responde: response, request } = require('express');
 const bcryptjs = require('bcryptjs');
-const User = require('../models/user');
+const { User } = require('../database/dbConnection');
+
 
 const userGet = async (req = request, res = response) => {
 
-  const { limit = 5, since = 0 } = req.query;
+  try {
+    const { limit = 5, since = 0 } = req.query;
 
-
-  const [total, users] = await Promise.all([
-    User.countDocuments({state: true}),//* se usa para contar la cantidad de documentos o registros que coinciden con el filtro en una colección de base de datos. *//
-    User.find({ state: true })
-      .skip(Number(since))
-      .limit(Number(limit))
-  ]);
-
-  res.json({
-    estadoPeticion: true,
-    total,
-    showData: users.length,
-    users
-  });
+    const [users, total] = await Promise.all([
+      User.findAll({
+        offset: since,
+        limit: limit,
+        attributes: { exclude: ['password'] } 
+      }),
+      User.count({
+        where: {
+          state: true
+        }
+      })
+    ]);
+    res.json({
+      users,
+      total
+    });
+  } catch (error) {
+    res.json({
+      msg: `Hable con el administrador: ${error}`
+    })
+  }
 }
 
 const userDelete = async (req, res = response) => {
@@ -29,16 +38,30 @@ const userDelete = async (req, res = response) => {
   const uid = req.uid;
 
   //* se elimina fisicamente *//
-  // const user = await User.findByIdAndDelete(id);
+  // const user = await User.destroy({
+  //   where: {id}
+  // });
+
+  const updatedUser = await User.findOne({ where: { id } });
 
   //* cambiar estado de usuario *//
-  const user = await User.findByIdAndUpdate(id, {state: false});
-  // const userAuthenticated = req.user;
-
-  res.json({
-    estadoPeticion: true,
-    user
-  });
+  try {
+    if (updatedUser) {
+      await updatedUser.update({ state: false });
+      console.log('Usuario desactivado con éxito');
+    } else {
+      console.log('Usuario no encontrado');
+    }
+  
+    res.json({
+      estadoPeticion: true,
+      user: updatedUser
+    });
+  } catch (error) {
+    res.json({
+      msg: `Hable con el administrador: ${error}`
+    })
+  }
 }
 
 const userPut = async (req, res = response) => {
@@ -53,31 +76,43 @@ const userPut = async (req, res = response) => {
     resto.password = bcryptjs.hashSync( password, salt );
   }
 
-  const user = await User.findByIdAndUpdate(id, resto);
+  // const user = await User.findByIdAndUpdate(id, resto);
 
-  res.json({
-    estadoPeticion: true,
-    user
-  });
+  const updatedUser = await User.findOne({ where: { id } });
+
+  //* cambiar estado de usuario *//
+  try {
+    if (updatedUser) {
+      await updatedUser.update(resto);
+      console.log('Usuario desactivado con éxito');
+    } else {
+      console.log('Usuario no encontrado');
+    }
+
+    res.json({
+      estadoPeticion: true,
+      user: resto
+    });
+  } catch (error) {
+    res.json({
+      msg: `Hable con el administrador: ${error}`
+    })
+  }
 }
 
 const userPost = async (req, res) => {
 
-  const {name, email, password, role} = req.body;
-  const user = new User({name, email, password, role});
-
-  //* verificar si el correo existe *//
-  // const existEmail = await User.findOne({email});
-  // if(existEmail) return res.status(400).json({
-  //   msg: 'El correo ya se encuentra registrado'
-  // });
+  const {name, email} = req.body;
+  // const user = new User({name, email, password});
+  const user = await User.create({ name, email, password: req.body.password });
 
   //* enctriptar contraseña *//
   const salt = bcryptjs.genSaltSync();
   user.password = bcryptjs.hashSync( password, salt );
 
   //* guardar en base de datos *//
-  await user.save()
+  await user.save();
+  const { password, ...user_data } = user.toJSON();
 
   res.json({
     estadoPeticion: true,
